@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator,MaxValueValidator
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -77,7 +77,8 @@ class OrderItem(models.Model):
                               blank=True,
                               on_delete=models.SET_NULL)
     quantity = models.IntegerField(verbose_name="Количество",
-                                   validators=[MinValueValidator(0)])
+                                   validators=[MinValueValidator(0),
+                                               MaxValueValidator(100)])
 
     order = models.ForeignKey("Order", related_name="items",
                               on_delete=models.CASCADE,
@@ -99,5 +100,4 @@ class Order(models.Model):
         verbose_name_plural = "Заказы"
 
     def __str__(self):
-        return f"{self.customer_first_name} {self.customer_last_name} " \
-               f"{self.customer_address}"
+        return f"{self.customer_first_name} {self.customer_last_name}"
