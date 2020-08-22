@@ -3,7 +3,7 @@ import json
 from django.templatetags.static import static
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .models import Product,Order,OrderItem
@@ -73,14 +73,15 @@ def register_order(request):
                                  order=order)
     return JsonResponse(data)
 
-@api_view(['GET', 'POST'])
-def foodcart_orders(request):
-    if request.method == 'GET':
+
+class RegisterOrders(APIView):
+
+    def get(self,request):
         orders= Order.objects.all()
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'POST':
+    def post(self,request):
         serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
