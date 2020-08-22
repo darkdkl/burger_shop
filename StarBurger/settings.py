@@ -25,7 +25,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
-    'phonenumber_field'
+    'phonenumber_field',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -41,6 +42,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'StarBurger.urls'
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    )
+}
 DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.versions.VersionsPanel',
     'debug_toolbar.panels.timer.TimerPanel',

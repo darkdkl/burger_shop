@@ -2,9 +2,12 @@ import json
 
 from django.templatetags.static import static
 from django.http import JsonResponse
-
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from .models import Product,Order,OrderItem
+from .serializers import OrderSerializer
 
 
 def banners_list_api(request):
@@ -61,15 +64,25 @@ def product_list_api(request):
 
 def register_order(request):
     data = json.loads(request.body.decode())
-    order_info={
-                "customer_first_name":data.get("firstname"),
-                "customer_last_name" :data.get("lastname"),
-                "customer_phone" :data.get("phonenumber"),
-                "customer_address":data.get('address'),
-                }
-    order=Order.objects.create(**order_info)
-    for product in data.get('products'):
+    products=data.pop("products")
+
+    order=Order.objects.create(**data)
+    for product in products:
         OrderItem.objects.create(product_id=product['product'],
                                  quantity=product['quantity'],
                                  order=order)
     return JsonResponse(data)
+
+@api_view(['GET', 'POST'])
+def foodcart_orders(request):
+    if request.method == 'GET':
+        orders= Order.objects.all()
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = OrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -80,7 +80,7 @@ class OrderItem(models.Model):
                                    validators=[MinValueValidator(0),
                                                MaxValueValidator(100)])
 
-    order = models.ForeignKey("Order", related_name="items",
+    order = models.ForeignKey("Order", related_name="products",
                               on_delete=models.CASCADE,
                               verbose_name="Заказ")
 
@@ -89,10 +89,10 @@ class OrderItem(models.Model):
 
 
 class Order(models.Model):
-    customer_first_name = models.CharField(verbose_name="Имя",max_length=150)
-    customer_last_name = models.CharField(verbose_name="Фамилия",max_length=150)
-    customer_phone = PhoneNumberField(verbose_name='Телефон')
-    customer_address = models.CharField(verbose_name="Адрес доставки",
+    firstname = models.CharField(verbose_name="Имя",max_length=150)
+    lastname = models.CharField(verbose_name="Фамилия",max_length=150)
+    phonenumber = PhoneNumberField(verbose_name='Телефон')
+    address = models.CharField(verbose_name="Адрес доставки",
                                        max_length=250)
 
     class Meta:
@@ -100,4 +100,4 @@ class Order(models.Model):
         verbose_name_plural = "Заказы"
 
     def __str__(self):
-        return f"{self.customer_first_name} {self.customer_last_name}"
+        return f"{self.firstname} {self.lastname}"

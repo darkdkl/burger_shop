@@ -16,7 +16,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline,]
-
+    list_display = ['__str__',"phonenumber","address"]
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
