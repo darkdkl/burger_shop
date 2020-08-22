@@ -50,8 +50,7 @@ class OrderSerializer(serializers.Serializer):
         return data
 
     def validate_address(self, data):
-        address = data.replace(" ", "")
-        if len(address) < 20 or address.isnumeric():
+        if len(data) < 20 or data.isnumeric():
             raise serializers.ValidationError(
                 'address не корректен')
 
