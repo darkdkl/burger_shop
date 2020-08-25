@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.shortcuts import reverse
 
@@ -19,6 +20,11 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline,]
     list_display = ['__str__',"phonenumber","address"]
     readonly_fields = ["total_cost",]
+
+    def response_change(self, request, obj):
+        if "next" in request.GET:
+            return HttpResponseRedirect(request.GET['next'])
+        return super().response_change(request, obj)
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
