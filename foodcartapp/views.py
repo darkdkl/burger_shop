@@ -1,5 +1,5 @@
 import json
-
+from django.db import transaction
 from django.templatetags.static import static
 from django.http import JsonResponse
 from rest_framework import status
@@ -61,11 +61,10 @@ def product_list_api(request):
         'indent': 4,
     })
 
-
+@transaction.atomic
 def register_order(request):
     data = json.loads(request.body.decode())
     products=data.pop("products")
-
     order=Order.objects.create(**data)
     for product in products:
         OrderItem.objects.create(product_id=product['product'],

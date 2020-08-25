@@ -1,7 +1,10 @@
 from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator,MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.db.models import Sum
+from django.db.utils import IntegrityError
 from phonenumber_field.modelfields import PhoneNumberField
+
 
 class Restaurant(models.Model):
     name = models.CharField('название', max_length=50)
@@ -72,32 +75,51 @@ class RestaurantMenuItem(models.Model):
             ['restaurant', 'product']
         ]
 
+
 class OrderItem(models.Model):
-    product=models.ForeignKey(Product,related_name="ordered",null=True,
-                              blank=True,
-                              on_delete=models.SET_NULL)
+    product = models.ForeignKey(Product, related_name="ordered", null=True,
+                                blank=True,
+                                on_delete=models.SET_NULL)
     quantity = models.IntegerField(verbose_name="Количество",
                                    validators=[MinValueValidator(0),
                                                MaxValueValidator(100)])
 
+    price = models.FloatField(verbose_name="Цена", null=True)
+
     order = models.ForeignKey("Order", related_name="products",
                               on_delete=models.CASCADE,
                               verbose_name="Заказ")
+    total_cost = models.FloatField(verbose_name="Сумма", default=0)
+
+    def save(self, *args, **kwargs):
+        if not self.price:
+            self.price = self.product.price
+        if self.quantity:
+            self.total_cost = self.quantity * self.price
+        super().save(*args, **kwargs)
+        self.order.calculate_total_cost
 
     def __str__(self):
         return self.product.name
 
 
 class Order(models.Model):
-    firstname = models.CharField(verbose_name="Имя",max_length=150)
-    lastname = models.CharField(verbose_name="Фамилия",max_length=150)
+    firstname = models.CharField(verbose_name="Имя", max_length=150)
+    lastname = models.CharField(verbose_name="Фамилия", max_length=150)
     phonenumber = PhoneNumberField(verbose_name='Телефон')
     address = models.CharField(verbose_name="Адрес доставки",
-                                       max_length=250)
+                               max_length=250)
+    total_cost = models.FloatField("Сумма заказа", default=0)
 
     class Meta:
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
+
+    @property
+    def calculate_total_cost(self):
+        self.total_cost = self.products.aggregate(cost=Sum("total_cost")
+                                                  ).get('cost')
+        self.save()
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"

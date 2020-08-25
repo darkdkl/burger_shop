@@ -11,12 +11,14 @@ from .models import (Restaurant, Product, RestaurantMenuItem,
 class OrderItemInline(admin.TabularInline):
     model =OrderItem
     extra = 0
+    readonly_fields = ["total_cost",]
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline,]
     list_display = ['__str__',"phonenumber","address"]
+    readonly_fields = ["total_cost",]
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
