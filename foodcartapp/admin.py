@@ -19,7 +19,7 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline,]
     list_display = ['__str__',"phonenumber","address"]
-    readonly_fields = ["total_cost",]
+    readonly_fields = ["total_cost","created"]
 
     def response_change(self, request, obj):
         if "next" in request.GET:

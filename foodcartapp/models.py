@@ -1,7 +1,10 @@
+from functools import reduce
+from operator import and_
+
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.utils import IntegrityError
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -104,12 +107,30 @@ class OrderItem(models.Model):
 
 
 class Order(models.Model):
+    ORDER_STATUSES = [
+        ('not', 'Не обработан'),
+        ('in', 'В обработке'),
+        ('com', 'Выполнен'),
+        ('rej', 'Отменен'),
+    ]
+    PAYMENT_OPTION = [
+        ('cashless', 'Безналичный'),
+        ('cash', 'Наличный')
+    ]
     firstname = models.CharField(verbose_name="Имя", max_length=150)
     lastname = models.CharField(verbose_name="Фамилия", max_length=150)
     phonenumber = PhoneNumberField(verbose_name='Телефон')
     address = models.CharField(verbose_name="Адрес доставки",
                                max_length=250)
+    status = models.CharField(max_length=3, choices=ORDER_STATUSES, default='not')
     total_cost = models.FloatField("Сумма заказа", default=0)
+    comment = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    called = models.DateTimeField(blank=True, null=True)
+    delivered = models.DateTimeField(blank=True, null=True)
+    type_payment = models.CharField(max_length=8, choices=PAYMENT_OPTION, blank=True)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL,
+                                   blank=True, null=True)
 
     class Meta:
         verbose_name = "Заказ"
@@ -120,6 +141,19 @@ class Order(models.Model):
         self.total_cost = self.products.aggregate(cost=Sum("total_cost")
                                                   ).get('cost')
         self.save()
+
+    @property
+    def get_restaurants(self):
+        products_ids = self.products.all().values_list('product_id', flat=True)
+        restaurants = [
+             [restaurant for restaurant in RestaurantMenuItem.objects.filter(
+                       product_id=product_id, availability=True).values_list(
+                       'restaurant__name', flat=True)
+             ] for product_id in products_ids
+                      ]
+        if restaurants:
+            return reduce(set.intersection, map(set, restaurants))
+        return []
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
