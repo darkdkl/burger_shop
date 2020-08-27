@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 import dj_database_url
 
@@ -128,3 +130,4 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "assets"),
     os.path.join(BASE_DIR, "bundles"),
 ]
+YANDEX_API_KEY=os.getenv('YANDEX_API_KEY')
