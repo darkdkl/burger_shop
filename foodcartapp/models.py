@@ -1,13 +1,12 @@
-from functools import reduce
-from distance import get_distance
+
+from .order_utils import get_restaurants_info
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Sum, Q
 from django.db.utils import IntegrityError
 from phonenumber_field.modelfields import PhoneNumberField
-from yandex_geocoder.exceptions import InvalidKey,NothingFound
-from collections import OrderedDict
+
 
 class Restaurant(models.Model):
     name = models.CharField('название', max_length=50)
@@ -144,23 +143,7 @@ class Order(models.Model):
 
     @property
     def get_restaurants(self):
-        products_ids = self.products.all().values_list('product_id', flat=True)
-        restaurants = [
-             [restaurant for restaurant in RestaurantMenuItem.objects.filter(
-                       product_id=product_id, availability=True).values_list(
-                       'restaurant__name','restaurant__address')
-             ] for product_id in products_ids
-                      ]
-        complete_data ={}
-        if restaurants:
-            for rest,address in reduce(set.intersection, map(set, restaurants)):
-                try:
-                    complete_data[rest]=get_distance(address,self.address)
-                except (InvalidKey,NothingFound):
-                    complete_data[rest]=0
-
-        return OrderedDict(sorted(complete_data.items(), key=lambda k: k[1]))
-        return []
+        return get_restaurants_info(self,RestaurantMenuItem)
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
