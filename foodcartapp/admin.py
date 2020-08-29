@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.shortcuts import reverse
-
+from django.core.cache import cache
 from .models import (Restaurant, Product, RestaurantMenuItem,
                      ProductCategory,Order,OrderItem)
 
@@ -25,6 +25,11 @@ class OrderAdmin(admin.ModelAdmin):
         if "next" in request.GET:
             return HttpResponseRedirect(request.GET['next'])
         return super().response_change(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        if 'address' in form.changed_data:
+            cache.delete(f'{obj.id}_coord_to')
+        super().save_model(request, obj, form, change)
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
