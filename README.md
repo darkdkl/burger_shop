@@ -147,6 +147,17 @@ Parcel будет следить за файлами в каталоге `bundle
 parcel build bundles-src/index.js -d bundles --public-url="./"
 ```
 
+Rest Api доступен по адресу (методы GET,POST)
+```
+http://localhost:8000/api/orders/
+```
+Пример POST запроса для создания заказа
+```
+{"products": [{"product": 1, "quantity": 2},{"product": 2, "quantity": 1}], "firstname": "Тимур", "lastname": "Иванов", "phonenumber": "+79001234567", "address": "Москва, Новый Арбат 10"}
+
+```
+
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
